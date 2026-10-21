@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#3B6F1A"><link rel="icon" href="icon-192.png"><title>Socya - Control de inspección EPP</title>
+<style>
+:root{--g:#549A27;--gd:#3B6F1A;--gl:#EBF7EE;--ink:#1E293B;--mut:#64748B;--line:#E2E8F0;--bg:#F1F5F9;--red:#DE350B;--amb:#D98200}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
+body{background:var(--bg);color:var(--ink);padding:10px;display:flex;justify-content:center}
+.page{background:#fff;width:100%;max-width:760px;box-shadow:0 4px 10px rgb(0 0 0/.1);border-radius:8px;overflow:hidden}
+.head{background:var(--gd);color:#fff;padding:14px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.head h1{font-size:19px;font-weight:700;line-height:1.2}
+.head small{display:block;font-size:11.5px;opacity:.85;margin-top:3px;font-weight:400}
+.code{text-align:right;font-size:11.5px;line-height:1.5;white-space:nowrap}
+.code b{font-size:16px;display:block}
+.body{padding:16px 22px 20px}
+h2{font-size:13px;color:var(--gd);border-bottom:2px solid var(--g);padding-bottom:3px;margin:14px 0 8px;font-weight:700}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}
+.f{display:flex;flex-direction:column;font-size:11px;color:var(--mut)}
+.f.full{grid-column:1/-1}
+.f input,.f select{border:none;border-bottom:1.5px solid #CBD5E1;padding:3px 2px;font-size:13px;color:var(--ink);background:transparent;outline:none;width:100%}
+.f input:focus,.f select:focus{border-color:var(--g)}
+.gps-row{display:flex;gap:6px;align-items:flex-end}
+.gps-row button{white-space:nowrap;font-size:11px;padding:4px 8px;border:1px solid var(--g);color:var(--g);background:#fff;border-radius:4px;cursor:pointer}
+.sum{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;background:var(--gl);border:1px solid #BBF7D0;border-radius:8px;padding:10px 14px}
+.sum canvas{width:76px;height:76px}
+.kpis{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px 12px;text-align:center;min-width:64px}
+.kpi b{font-size:18px;display:block}
+.kpi span{font-size:10.5px;color:var(--mut)}
+.verdict{font-size:13px;font-weight:700}
+.vis{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.box{border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.box h3{font-size:11px;text-align:center;background:#F8FAFC;padding:4px;border-bottom:1px solid var(--line);color:#475569;font-weight:600}
+.box canvas.map{width:100%;height:auto;display:block;padding:0}
+.adj{display:flex;gap:6px;justify-content:center;padding:6px;border-top:1px solid var(--line)}
+.adj button{font-size:11px;padding:4px 10px;border:1px solid var(--g);color:var(--g);background:#fff;border-radius:4px;cursor:pointer}
+.adj button.on{background:var(--g);color:#fff}
+.ph{height:150px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#F8FAFC;overflow:hidden;position:relative}
+.ph span{font-size:11px;color:#94A3B8;text-align:center;padding:8px}
+.ph img{width:100%;height:100%;object-fit:cover;display:none;position:absolute;inset:0}
+.photos{display:flex;flex-direction:column;gap:10px}
+.photos .ph{height:140px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;color:#475569;background:#F8FAFC;padding:5px 6px;border-bottom:1px solid var(--line)}
+td{padding:5px 6px;border-bottom:1px solid var(--line);font-size:12px;vertical-align:middle}
+td select,td input{font-size:12px;padding:2px;border:1px solid #CBD5E1;border-radius:4px;background:#F8FAFC;width:100%;outline:none}
+td .pv{display:none;font-weight:700}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;background:#94A3B8}
+.crit{font-size:10px;color:var(--mut)}
+.sign{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.sign canvas{width:100%;height:90px;border:1px dashed #CBD5E1;border-radius:6px;background:#FAFBFC;touch-action:none}
+.sign .cap{font-size:11px;color:var(--mut);display:flex;justify-content:space-between;margin-top:3px}
+.sign .cap button{border:none;background:none;color:var(--g);font-size:11px;cursor:pointer}
+textarea{width:100%;border:1px solid #CBD5E1;border-radius:4px;font-size:12px;resize:none;background:#F8FAFC;padding:6px;outline:none}
+.foot{margin-top:12px;font-size:10px;color:var(--mut);display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:6px}
+.act{text-align:center;margin-top:14px;display:flex;gap:10px;justify-content:center}
+.btn{background:var(--g);color:#fff;border:none;padding:10px 22px;font-size:13px;font-weight:700;border-radius:6px;cursor:pointer}
+.btn.sec{background:#fff;color:var(--g);border:1px solid var(--g)}
+.leg{font-size:10.5px;color:var(--mut);margin-top:4px}
+.sec-block{break-inside:avoid}
+body.gen .ind{display:none!important}
+body:not(.gen) .gen{display:none!important}
+td input[type=number]{text-align:center}
+@media(max-width:520px){.grid,.vis,.sign{grid-template-columns:1fr}.head{flex-direction:column;align-items:flex-start}.code{text-align:left}.sum{grid-template-columns:1fr}}
+@media print{
+@page{size:A4 portrait;margin:.8cm}
+body{background:#fff;padding:0}
+.page{box-shadow:none;max-width:100%;border-radius:0}
+.head,.sum,.dot,th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.adj,.act,.gps-row button,.sign .cap button,.ph span{display:none!important}
+td select,td input{border:none!important;background:transparent!important;appearance:none;-webkit-appearance:none;padding:0}
+td .pv{display:inline}
+.f input,.f select{border-bottom:1px solid #CBD5E1;appearance:none;-webkit-appearance:none}
+textarea{border:none;background:transparent;padding:0}
+.ph{background:transparent;border:1px dashed #CBD5E1}
+.body{padding:10px 4px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="head">
+    <div><h1>Control de inspección de EPP<small>Seguridad y Salud en el Trabajo · Socya</small></h1></div>
+    <div class="code">Folio<b id="lbl-code">SOC-00000</b>Versión 2.0</div>
+  </div>
+
+  <div class="body">
+    <h2>1. Datos de la inspección</h2>
+    <div class="grid">
+      <label class="f">Inspector en campo<input id="inp-inspector" placeholder="Nombre completo"></label>
+      <label class="f">Cargo del inspector<input id="inp-cargo" placeholder="Ej: Coordinador SST"></label>
+      <label class="f">Organización / empresa<input id="inp-empresa" placeholder="Empresa evaluada"></label>
+      <label class="f">Proyecto / frente de obra<input id="inp-proyecto" placeholder="Nombre del proyecto"></label>
+      <label class="f">Fecha<input type="date" id="inp-date"></label>
+      <label class="f">Hora<input type="time" id="inp-time"></label>
+      <label class="f">Inspección dirigida a
+        <select id="inp-alcance" onchange="setAlcance()"><option value="ind">Un trabajador (individual)</option><option value="gen">Grupo o cuadrilla (general)</option></select>
+      </label>
+      <label class="f ind">Trabajador inspeccionado<input id="inp-trab" placeholder="Nombre"></label>
+      <label class="f ind">Documento / cargo del trabajador<input id="inp-doc" placeholder="C.C. y cargo"></label>
+      <label class="f gen">Cuadrilla o grupo<input id="inp-grupo" placeholder="Ej: Cuadrilla excavación"></label>
+      <label class="f gen">N.º de trabajadores inspeccionados<input type="number" min="1" id="inp-ntrab" placeholder="Ej: 12" oninput="resumen()"></label>
+      <label class="f">Actividad / área<input id="inp-area" placeholder="Ej: Excavación, bodega"></label>
+      <label class="f">Tipo de inspección
+        <select id="inp-tipo"><option>Rutinaria</option><option>Ingreso</option><option>Seguimiento</option><option>Posterior a incidente</option></select>
+      </label>
+      <div class="f full">Ubicación GPS (funciona sin señal)
+        <div class="gps-row"><input id="inp-gps" placeholder="Toque «Obtener» o escriba la ubicación"><button type="button" onclick="obtenerGPS()">Obtener</button></div>
+      </div>
+    </div>
+
+    <h2>2. Resultado general</h2>
+    <div class="sum sec-block">
+      <canvas id="donut" width="152" height="152"></canvas>
+      <div>
+        <div class="kpis" id="kpis"></div>
+        <div class="verdict" id="verdict"></div>
+        <div class="leg" id="legend"></div>
+      </div>
+    </div>
+
+    <h2>3. Mapa de pines y evidencia</h2>
+    <div class="vis sec-block">
+      <div class="box"><h3>Mapa de pines</h3><canvas id="eppCanvas" class="map" width="360" height="540"></canvas><div class="adj"><button id="btn-adj" onclick="toggleAjuste()">Ajustar pines</button><button onclick="resetPines()">Restablecer</button></div></div>
+      <div class="photos">
+        <div class="box"><h3>Evidencia fotográfica 1</h3><div class="ph" onclick="document.getElementById('f1').click()"><span id="s1">Toque para añadir foto</span><img id="p1" alt="Evidencia 1"></div></div>
+        <div class="box"><h3>Evidencia fotográfica 2</h3><div class="ph" onclick="document.getElementById('f2').click()"><span id="s2">Toque para añadir foto</span><img id="p2" alt="Evidencia 2"></div></div>
+      </div>
+      <input type="file" id="f1" accept="image/*" hidden onchange="foto(event,'p1','s1')">
+      <input type="file" id="f2" accept="image/*" hidden onchange="foto(event,'p2','s2')">
+    </div>
+
+    <h2>4. Detalle por elemento</h2>
+    <table class="sec-block">
+      <thead><tr><th>Elemento evaluado</th><th style="width:15%">¿Cumple?</th><th style="width:20%">Condición</th><th class="gen" style="width:12%">Sin este EPP</th><th style="width:28%">Observación</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="leg">Condición: Buen estado = sin daño visible · Desgaste = usable con seguimiento · Deteriorado = debe reponerse de inmediato.</div>
+
+    <h2>5. Observaciones y acciones correctivas</h2>
+    <div class="sec-block">
+      <textarea id="txt-obs" rows="2" placeholder="Observaciones generales (ninguna si no aplica)"></textarea>
+      <div class="grid" style="margin-top:8px">
+        <label class="f">Acción correctiva requerida<input id="inp-accion" placeholder="Ej: Reposición de guantes"></label>
+        <label class="f">Responsable<input id="inp-resp" placeholder="Nombre"></label>
+        <label class="f">Fecha compromiso<input type="date" id="inp-fcomp"></label>
+        <label class="f">Entrega de EPP / reinducción
+          <select id="inp-ent"><option>No aplica</option><option>Entrega realizada</option><option>Entrega pendiente</option><option>Reinducción realizada</option></select>
+        </label>
+      </div>
+    </div>
+
+    <h2>6. Firmas</h2>
+    <div class="sign sec-block">
+      <div><canvas id="sg1" width="340" height="180"></canvas><div class="cap"><span>Inspector</span><button onclick="limpiarFirma('sg1')">Borrar</button></div></div>
+      <div><canvas id="sg2" width="340" height="180"></canvas><div class="cap"><span id="lbl-sg2">Trabajador inspeccionado</span><button onclick="limpiarFirma('sg2')">Borrar</button></div></div>
+    </div>
+
+    <div class="foot"><span id="foot-gen"></span><span>Anexo del informe mensual de gestión SST</span></div>
+
+    <div class="act">
+      <button class="btn sec" onclick="nuevaInspeccion()">Nueva inspección</button>
+      <button class="btn" onclick="exportarPDF()">Exportar reporte PDF</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const eppData=[
+ {name:'Pava o gorra',x:222,y:52,status:'Sí',cond:'Buen estado',obs:''},
+ {name:'Guantes de protección',x:77,y:190,status:'Sí',cond:'Buen estado',obs:''},
+ {name:'Camibuso',x:147,y:215,status:'Sí',cond:'Buen estado',obs:''},
+ {name:'Pantalón',x:180,y:390,status:'Sí',cond:'Buen estado',obs:''},
+ {name:'Botas de seguridad',x:227,y:474,status:'Sí',cond:'Buen estado',obs:''}
+];
+try{const sv=JSON.parse(localStorage.getItem('socya_pins')||'null');if(sv)eppData.forEach((i,k)=>{if(sv[k]){i.x=sv[k][0];i.y=sv[k][1]}})}catch(e){}
+const COL={'Sí':'#549A27','No':'#DE350B','N/A':'#757575'};
+const canvas=document.getElementById('eppCanvas'),ctx=canvas.getContext('2d'),bg=new Image();
+
+window.addEventListener('DOMContentLoaded',()=>{
+  iniciar();tabla();resumen();
+  bg.onload=redibujar;bg.src='trabajador.png';
+  redibujar();
+  initFirma('sg1');initFirma('sg2');
+});
+
+function iniciar(){
+  let n=parseInt(localStorage.getItem('socya_id_counter')||Math.floor(10000+Math.random()*90000))+1;
+  localStorage.setItem('socya_id_counter',n);
+  document.getElementById('lbl-code').textContent='SOC-'+n;
+  const d=new Date(),p=v=>String(v).padStart(2,'0');
+  document.getElementById('inp-date').value=d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+  document.getElementById('inp-time').value=p(d.getHours())+':'+p(d.getMinutes());
+}
+
+function tabla(){
+  const tb=document.getElementById('rows');tb.innerHTML='';
+  eppData.forEach(it=>{
+    const tr=document.createElement('tr');
+    const c1=document.createElement('td');
+    const dot=document.createElement('span');dot.className='dot';
+    c1.append(dot,it.name);
+    const c2=document.createElement('td');
+    const s=mkSel(['Sí','No','N/A'],it.status);
+    const pv=document.createElement('span');pv.className='pv';
+    const c3=document.createElement('td');
+    const cs=mkSel(['Buen estado','Desgaste','Deteriorado','No aplica'],it.cond);
+    const pc=document.createElement('span');pc.className='pv';pc.textContent=it.cond;
+    const c5=document.createElement('td');c5.className='gen';
+    const n=document.createElement('input');n.type='number';n.min=0;n.placeholder='0';n.value=it.n||'';
+    const pn=document.createElement('span');pn.className='pv';
+    const c4=document.createElement('td');
+    const o=document.createElement('input');o.placeholder='—';o.value=it.obs;
+    const po=document.createElement('span');po.className='pv';
+    const pintar=()=>{pn.textContent=it.n||0;pv.textContent=it.status;pv.style.color=COL[it.status];dot.style.background=COL[it.status];po.textContent=it.obs||'—'};
+    s.onchange=e=>{it.status=e.target.value;if(it.status==='N/A'){it.cond='No aplica';cs.value='No aplica';pc.textContent='No aplica'}pintar();resumen();redibujar()};
+    cs.onchange=e=>{it.cond=e.target.value;pc.textContent=it.cond;resumen()};
+    n.oninput=e=>{it.n=parseInt(e.target.value)||0;if(it.n>0&&it.status!=='No'){it.status='No';s.value='No'}pintar();resumen();redibujar()};
+    o.oninput=e=>{it.obs=e.target.value;pintar()};
+    pintar();
+    c2.append(s,pv);c3.append(cs,pc);c4.append(o,po);c5.append(n,pn);
+    tr.append(c1,c2,c3,c5,c4);tb.appendChild(tr);
+  });
+}
+function mkSel(ops,val){const s=document.createElement('select');ops.forEach(o=>{const e=document.createElement('option');e.value=e.text=o;if(o===val)e.selected=true;s.appendChild(e)});return s}
+
+function resumen(){
+  let si=0,no=0,na=0,des=0;
+  eppData.forEach(i=>{if(i.status==='Sí')si++;else if(i.status==='No')no++;else na++;if(i.cond==='Desgaste'||i.cond==='Deteriorado')des++});
+  const den=si+no,idx=den?Math.round(si/den*100):100;
+  document.getElementById('kpis').innerHTML=
+   `<div class="kpi"><b style="color:#549A27">${si}</b><span>Cumple</span></div>`+
+   `<div class="kpi"><b style="color:#DE350B">${no}</b><span>No cumple</span></div>`+
+   `<div class="kpi"><b style="color:#757575">${na}</b><span>N/A</span></div>`+
+   `<div class="kpi"><b style="color:#D98200">${des}</b><span>Con desgaste</span></div>`;
+  const v=document.getElementById('verdict');
+  let txt,col;
+  if(no>0){txt='No conforme · Acciones pendientes';col='#DE350B'}
+  else if(des>0){txt='Conforme con observaciones · Seguimiento';col='#D98200'}
+  else{txt='Conforme';col='#549A27'}
+  v.textContent='Índice de cumplimiento: '+idx+'% — '+txt;v.style.color=col;
+  let lg='Elementos evaluados: '+eppData.length+' · Aplicables: '+den;
+  if(document.body.classList.contains('gen')){const t=document.getElementById('inp-ntrab').value;const mx=Math.max(0,...eppData.map(i=>i.n||0));if(t)lg+=' · Trabajadores: '+t;if(mx>0)lg+=' · Máx. sin un EPP: '+mx}
+  document.getElementById('legend').textContent=lg;
+  donut(idx,no>0?'#DE350B':'#549A27');
+}
+function donut(p,color){
+  const c=document.getElementById('donut'),x=c.getContext('2d');
+  x.clearRect(0,0,152,152);
+  x.lineWidth=14;x.beginPath();x.arc(76,76,58,0,7);x.strokeStyle='#CBD5E1';x.stroke();
+  if(p>0){x.beginPath();x.arc(76,76,58,-Math.PI/2,-Math.PI/2+2*Math.PI*p/100);x.strokeStyle=color;x.lineCap='round';x.stroke()}
+  x.fillStyle='#1E293B';x.font='bold 34px Segoe UI,Arial';x.textAlign='center';x.fillText(p+'%',76,80);
+  x.font='13px Segoe UI,Arial';x.fillStyle='#64748B';x.fillText('cumplimiento',76,100);
+}
+
+function redibujar(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  try{ctx.drawImage(bg,0,0,canvas.width,canvas.height)}catch(e){}
+  eppData.forEach(i=>{
+    ctx.beginPath();ctx.arc(i.x,i.y,14,0,7);ctx.fillStyle=COL[i.status];ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.beginPath();ctx.strokeStyle='#fff';ctx.lineWidth=2.5;ctx.lineCap='round';
+    if(i.status==='Sí'){ctx.moveTo(i.x-5,i.y);ctx.lineTo(i.x-1,i.y+4);ctx.lineTo(i.x+5,i.y-4)}
+    else if(i.status==='No'){ctx.moveTo(i.x-4,i.y-4);ctx.lineTo(i.x+4,i.y+4);ctx.moveTo(i.x+4,i.y-4);ctx.lineTo(i.x-4,i.y+4)}
+    else{ctx.moveTo(i.x-4,i.y+4);ctx.lineTo(i.x+4,i.y-4)}
+    ctx.stroke();
+  });
+}
+
+let ajuste=false,arr=null;
+function toggleAjuste(){
+  ajuste=!ajuste;
+  canvas.style.touchAction=ajuste?'none':'auto';
+  const b=document.getElementById('btn-adj');b.classList.toggle('on',ajuste);b.textContent=ajuste?'Terminar ajuste':'Ajustar pines';
+}
+function guardarPines(){localStorage.setItem('socya_pins',JSON.stringify(eppData.map(i=>[Math.round(i.x),Math.round(i.y)])))}
+function resetPines(){
+  const d=[[222,52],[77,190],[147,215],[180,390],[227,474]];
+  eppData.forEach((i,k)=>{i.x=d[k][0];i.y=d[k][1]});
+  localStorage.removeItem('socya_pins');redibujar();
+}
+(function(){
+  const pos=e=>{const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}};
+  canvas.addEventListener('pointerdown',e=>{
+    if(!ajuste)return;const p=pos(e);let best=null,bd=40;
+    eppData.forEach(i=>{const d=Math.hypot(i.x-p.x,i.y-p.y);if(d<bd){bd=d;best=i}});
+    if(best){arr=best;canvas.setPointerCapture(e.pointerId)}
+  });
+  canvas.addEventListener('pointermove',e=>{
+    if(!arr)return;const p=pos(e);
+    arr.x=Math.max(14,Math.min(canvas.width-14,p.x));arr.y=Math.max(14,Math.min(canvas.height-14,p.y));redibujar();
+  });
+  ['pointerup','pointercancel'].forEach(t=>canvas.addEventListener(t,()=>{if(arr){arr=null;guardarPines()}}));
+})();
+function foto(e,img,sp){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{const im=document.getElementById(img);im.src=ev.target.result;im.style.display='block';document.getElementById(sp).style.display='none'};
+  r.readAsDataURL(f);
+}
+
+function setAlcance(){
+  const g=document.getElementById('inp-alcance').value==='gen';
+  document.body.classList.toggle('gen',g);
+  document.getElementById('lbl-sg2').textContent=g?'Representante de la cuadrilla':'Trabajador inspeccionado';
+  resumen();
+}
+function obtenerGPS(){
+  const g=document.getElementById('inp-gps');
+  if(!navigator.geolocation){g.value='';g.placeholder='Este navegador no tiene GPS; escriba la ubicación';return}
+  if(!window.isSecureContext){g.value='';g.placeholder='Abra la app instalada o por https; escriba la ubicación';return}
+  g.value='Buscando ubicación…';
+  const ok=p=>{g.value=p.coords.latitude.toFixed(5)+', '+p.coords.longitude.toFixed(5)+' (±'+Math.round(p.coords.accuracy)+' m)'};
+  const fail=er=>{
+    g.value='';
+    g.placeholder=er.code===1?'Permiso de ubicación denegado: actívelo en el navegador y en el celular'
+      :er.code===2?'GPS apagado o sin satélites: actívelo y salga a cielo abierto'
+      :'Tardó demasiado: intente al aire libre o escriba la ubicación';
+  };
+  navigator.geolocation.getCurrentPosition(ok,()=>{
+    navigator.geolocation.getCurrentPosition(ok,fail,{enableHighAccuracy:false,timeout:30000,maximumAge:600000});
+  },{enableHighAccuracy:true,timeout:20000,maximumAge:0});
+}
+function initFirma(id){
+  const c=document.getElementById(id),x=c.getContext('2d');let d=false;
+  x.lineWidth=2.5;x.lineCap='round';x.strokeStyle='#1E293B';
+  const pos=e=>{const r=c.getBoundingClientRect();return{x:(e.clientX-r.left)*c.width/r.width,y:(e.clientY-r.top)*c.height/r.height}};
+  c.addEventListener('pointerdown',e=>{d=true;const p=pos(e);x.beginPath();x.moveTo(p.x,p.y);c.setPointerCapture(e.pointerId)});
+  c.addEventListener('pointermove',e=>{if(!d)return;const p=pos(e);x.lineTo(p.x,p.y);x.stroke()});
+  ['pointerup','pointercancel'].forEach(t=>c.addEventListener(t,()=>d=false));
+}
+function limpiarFirma(id){const c=document.getElementById(id);c.getContext('2d').clearRect(0,0,c.width,c.height)}
+
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+function exportarPDF(){
+  document.querySelectorAll('input,select').forEach(el=>{if(el.tagName==='INPUT')el.setAttribute('value',el.value)});
+  document.getElementById('foot-gen').textContent='Generado el '+new Date().toLocaleString('es-CO');
+  redibujar();window.print();
+}
+function nuevaInspeccion(){
+  if(!confirm('¿Iniciar una nueva inspección? Se borrarán los datos actuales.'))return;
+  location.reload();
+}
+</script>
+</body>
+</html>
